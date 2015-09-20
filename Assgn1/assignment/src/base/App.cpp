@@ -257,7 +257,28 @@ bool App::handleEvent(const Window::Event& ev) {
 			curr_translation_.z += trans_speed;
 		else if (ev.key == FW_KEY_PAGE_DOWN)
 			curr_translation_.z -= trans_speed;
+		else if (ev.key == FW_KEY_PLUS)
+			curr_scale_x_ += 0.05;
+		else if (ev.key == FW_KEY_MINUS)
+			curr_scale_x_ -= 0.05;
+		else if (ev.key == FW_KEY_Q)
+			obj_rotation_angle_ -= 0.05 * FW_PI;
+		else if (ev.key == FW_KEY_E)
+			obj_rotation_angle_ += 0.05 * FW_PI;
+		else if (ev.key == FW_KEY_R) {			
+			if (timer_on_ == FALSE){
+				timer_.start();
+				timer_on_ = TRUE;
+			}
+			else{
+				timer_.unstart();
+				timer_on_ = FALSE;
+			}
+		}
 	}
+
+	if (timer_on_ == TRUE)
+		camera_rotation_angle_ += timer_.end() * 0.3 * FW_PI;
 	
 	if (ev.type == Window::EventType_KeyUp) {
 	}
@@ -331,6 +352,7 @@ void App::initRendering() {
 		out vec4 vColor;
 		
 		uniform mat4 uModelToWorld;
+		uniform mat3 uModelToWorldInvTrans;
 		uniform mat4 uWorldToClip;
 		uniform float uShading;
 		
@@ -342,7 +364,7 @@ void App::initRendering() {
 		void main()
 		{
 			// EXTRA: oops, someone forgot to transform normals here...
-			float clampedCosine = clamp(dot(aNormal, directionToLight), 0.0, 1.0);
+			float clampedCosine = clamp(dot(uModelToWorldInvTrans * aNormal, directionToLight), 0.0, 1.0);
 			vec3 litColor = vec3(clampedCosine);
 			vec3 generatedColor = distinctColors[gl_VertexID % 6];
 			// gl_Position is a built-in output variable that marks the final position
@@ -367,6 +389,7 @@ void App::initRendering() {
 	gl_.shader_program = shader_program->getHandle();
 	gl_.world_to_clip_uniform = glGetUniformLocation(gl_.shader_program, "uWorldToClip");
 	gl_.model_to_world_uniform = glGetUniformLocation(gl_.shader_program, "uModelToWorld");
+	gl_.model_to_world_invTrans_uniform = glGetUniformLocation(gl_.shader_program, "uModelToWorldInvTrans");
 	gl_.shading_toggle_uniform = glGetUniformLocation(gl_.shader_program, "uShading");
 }
 
@@ -415,10 +438,19 @@ void App::render() {
 	// YOUR CODE HERE (R1)
 	// Set the model space -> world space transform to translate the model according to user input.
 	Mat4f modelToWorld;
-	modelToWorld.setCol(3, Vec4f(curr_translation_, 1.0f));
 	
+	Mat3f obj_rot = Mat3f::rotation(Vec3f(0, 1, 0), -obj_rotation_angle_);
+	// multiply the obj_rot with scaling on x axis
+	obj_rot.setCol(0,obj_rot.getCol(0)*curr_scale_x_);
+	modelToWorld.setCol(3, Vec4f(curr_translation_, 1.0f));
+	modelToWorld.setCol(0, Vec4f(obj_rot.getCol(0), 0));
+	modelToWorld.setCol(1, Vec4f(obj_rot.getCol(1), 0));
+	modelToWorld.setCol(2, Vec4f(obj_rot.getCol(2), 0));
+	
+	Mat3f modelToWorldInvT = obj_rot.inverted().transposed();
 	// Draw the model with your model-to-world transformation.
 	glUniformMatrix4fv(gl_.model_to_world_uniform, 1, GL_FALSE, modelToWorld.getPtr());
+	glUniformMatrix3fv(gl_.model_to_world_invTrans_uniform, 1, GL_FALSE, modelToWorldInvT.getPtr());
 	glBindVertexArray(gl_.dynamic_vao);
 	glDrawArrays(GL_TRIANGLES, 0, vertices_.size());
 
@@ -430,6 +462,7 @@ void App::render() {
 	GLContext::checkErrors();
 	
 	// Show status messages. You may find it useful to show some debug information in a message.
+	common_ctrl_.message(sprintf("Use Q/E to rotate the object and +/- to scale the object."), "Newinstructions");	
 	common_ctrl_.message(sprintf("Use Home/End to rotate camera."), "instructions");
 	common_ctrl_.message(sprintf("Camera is at (%.2f %.2f %.2f) looking towards origin.",
 		-FW::sin(camera_rotation_angle_) * camera_distance, 0.0f,

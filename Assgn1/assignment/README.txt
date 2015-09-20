@@ -63,6 +63,9 @@ R2 Generating a simple cone mesh and normals (3p): done
 
 # Did you do any extra credit work?
  - Used version control
+ - Implemented Rotation and scaling transforms. Use Q and E to rotate and +/- to scale the object 
+ - Implement efficient normal transforms
+ - Rotation Animation using timers
 (Describe what you did and, if there was a substantial amount of work involved, how you did it. Also describe how to use/activate your extra features, if they are interactive.)
 
 # Are there any known problems/bugs remaining in your code?

@@ -20,7 +20,7 @@ struct glGeneratedIndices
 	GLuint static_vao, dynamic_vao;
 	GLuint shader_program;
 	GLuint static_vertex_buffer, dynamic_vertex_buffer;
-	GLuint model_to_world_uniform, world_to_clip_uniform, shading_toggle_uniform;
+	GLuint model_to_world_uniform, world_to_clip_uniform, shading_toggle_uniform, model_to_world_invTrans_uniform;
 };
 
 class App : public Window::Listener
@@ -64,12 +64,15 @@ private:
 
 	// YOUR CODE HERE (R1)
 	// Add a class member to store the current translation.
-	Vec3f curr_translation_;
+	Vec3f				curr_translation_;
+	float				curr_scale_x_ = 1.0f;
+	float				obj_rotation_angle_ = 0.0f;
 	// EXTRA:
 	// For animation extra credit you can use the framework's Timer class.
 	// The .start() and .unstart() methods start and stop the timer; when it's
 	// running, .end() gives you seconds passed after last call to .end().
-	// Timer timer_;
+    Timer timer_;
+	bool timer_on_ = FALSE;
 };
 
 }
