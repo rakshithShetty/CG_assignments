@@ -136,6 +136,19 @@ vector<Vertex> loadUserGeneratedModel() {
 		//    of the ith vertex at the base of the cone. Z-coordinate is very similar.
 		// - For the normal calculation, you'll want to use the cross() function for
 		//   cross product, and Vec3f's .normalized() or .normalize() methods.
+		v1.position.x = FW::cos(angle_increment * i) * radius;
+		v1.position.z = FW::sin(angle_increment * i) * radius;
+		v1.position.y = -1.0f;
+		v2.position.x = FW::cos(angle_increment * (i+1)) * radius;
+		v2.position.z = FW::sin(angle_increment * (i+1)) * radius;
+		v2.position.y = -1.0f;
+
+		// Normal to a plane can be computed by cross product of any two vectors
+		// lying on the plane. Since v0 is the origin we can just use v1 and v2
+		v0.normal = FW::cross(v1.position, v2.position).normalized();
+		// copy this normal to other 2 vectors
+		v1.normal = v0.normal;
+		v2.normal = v0.normal;
 		
 		// Then we add the vertices to the array.
 		// .push_back() grows the size of the vector by one, copies its argument,
@@ -221,10 +234,23 @@ bool App::handleEvent(const Window::Event& ev) {
 		// Look in framework/gui/Keys.hpp for more key codes.
 		// Visual Studio tip: you can right-click an identifier like FW_KEY_HOME
 		// and "Go to definition" to jump directly to where the identifier is defined.
+		const float trans_speed = 0.05;
 		if (ev.key == FW_KEY_HOME)
 			camera_rotation_angle_ -= 0.05 * FW_PI;
 		else if (ev.key == FW_KEY_END)
 			camera_rotation_angle_ += 0.05 * FW_PI;
+		else if (ev.key == FW_KEY_LEFT)
+			curr_translation_.x -= trans_speed;
+		else if (ev.key == FW_KEY_RIGHT)
+			curr_translation_.x += trans_speed;
+		else if (ev.key == FW_KEY_UP)
+			curr_translation_.y += trans_speed;
+		else if (ev.key == FW_KEY_DOWN)
+			curr_translation_.y -= trans_speed;
+		else if (ev.key == FW_KEY_PAGE_UP)
+			curr_translation_.z += trans_speed;
+		else if (ev.key == FW_KEY_PAGE_DOWN)
+			curr_translation_.z -= trans_speed;
 	}
 	
 	if (ev.type == Window::EventType_KeyUp) {
@@ -383,6 +409,7 @@ void App::render() {
 	// YOUR CODE HERE (R1)
 	// Set the model space -> world space transform to translate the model according to user input.
 	Mat4f modelToWorld;
+	modelToWorld.setCol(3, Vec4f(curr_translation_, 1.0f));
 	
 	// Draw the model with your model-to-world transformation.
 	glUniformMatrix4fv(gl_.model_to_world_uniform, 1, GL_FALSE, modelToWorld.getPtr());

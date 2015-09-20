@@ -3,8 +3,8 @@
 #
 # Assignment 1: Introduction
 
-Student name:
-Student number:
+Student name: Rakshith Shetty
+Student number: 466945
 Hours spent on requirements (approx.):
 Hours spent on extra credit (approx.):
 
@@ -14,29 +14,39 @@ Hours spent on extra credit (approx.):
 # Keep it short; answering shouldn't take you more than 5-10 minutes.
 
 - What are you studying here at Aalto? (Department, major, minor...?)
-
+  Department of computer science. Machine Learning and Data Mining
+  
 - Which year of your studies is this?
+  2nd Year
 
 - Is ME-C3100 a mandatory course for you?
+  No
 
 - Have you had something to do with graphics before? Other studies, personal interests, work?
-
+  Nothing, except interest in games and I participated in Graffathon 2015 which piqued my interest to take this course
+  
 - Do you remember basic linear algebra? Matrix and vector multiplication, cross product, that sort of thing?
-
+  Yes
+  
 - How is your overall programming experience? What language are you most comfortable with?
+  I am proficient in C. Recently picked up python, but never studied any object oriented programming language formally.
 
 - Do you have some experience with these things? (If not, do you have experience with something similar such as C or Direct3D?)
-C++:
-C++11:
-OpenGL:
+C++:  very little c++, but done lots of programming with C.
+C++11: No
+OpenGL: No
 
 - Have you used a version control system such as Git, Mercurial or Subversion? Which ones?
+  I have used git (a lot), svn (to an extent) and cvs (for a brief period of time).
 
 - Did you go to the technology lecture?
-
+  No, I was on holidays but plan to attend in the future
+  
 - Did you go to exercise sessions?
+  No
 
 - Did you work on the assignment using Aalto computers, your own computers, or both?
+  Own computer
 
 # Which parts of the assignment did you complete? Mark them 'done'.
 # You can also mark non-completed parts as 'attempted' if you spent a fair amount of
@@ -46,8 +56,8 @@ OpenGL:
 (Try to get everything done! Based on previous data, virtually everyone who put in the work and did well in the first two assignments ended up finishing the course, and also reported a high level of satisfaction at the end of the course.)
 
                             opened this file (0p): done
-                         R1 Moving an object (1p): not done
-R2 Generating a simple cone mesh and normals (3p): not done
+                         R1 Moving an object (1p): done
+R2 Generating a simple cone mesh and normals (3p): done
   R3 Converting mesh data for OpenGL viewing (3p): not done
            R4 Loading a large mesh from file (3p): not done
 
