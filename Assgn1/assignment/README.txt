@@ -5,8 +5,8 @@
 
 Student name: Rakshith Shetty
 Student number: 466945
-Hours spent on requirements (approx.):
-Hours spent on extra credit (approx.):
+Hours spent on requirements (approx.): 2
+Hours spent on extra credit (approx.): 3
 
 # First, some questions about where you come from and how you got started.
 # Your answers in this section will be used to improve the course.
