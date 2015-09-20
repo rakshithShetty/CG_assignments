@@ -58,11 +58,11 @@ OpenGL: No
                             opened this file (0p): done
                          R1 Moving an object (1p): done
 R2 Generating a simple cone mesh and normals (3p): done
-  R3 Converting mesh data for OpenGL viewing (3p): not done
-           R4 Loading a large mesh from file (3p): not done
+  R3 Converting mesh data for OpenGL viewing (3p): done
+           R4 Loading a large mesh from file (3p): done
 
 # Did you do any extra credit work?
-
+ - Used version control
 (Describe what you did and, if there was a substantial amount of work involved, how you did it. Also describe how to use/activate your extra features, if they are interactive.)
 
 # Are there any known problems/bugs remaining in your code?

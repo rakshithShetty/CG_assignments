@@ -56,6 +56,7 @@ vector<Vertex> unpackIndexedData(
 	const vector<array<unsigned, 6>>& faces)
 {
 	vector<Vertex> vertices;
+	Vertex v;
 
 	// This is a 'range-for' loop which goes through all objects in the container 'faces'.
 	// '&' gives us a reference to the object inside the container; if we omitted '&',
@@ -72,6 +73,11 @@ vector<Vertex> unpackIndexedData(
 		// f[1] is the index of the normal of the first vertex
 		// f[2] is the index of the position of the second vertex
 		// ...
+		for (int i = 0; i < 3; i++){
+			v.position = positions[f[2 * i]];
+			v.normal = normals[f[2 * i + 1]];
+			vertices.push_back(v);
+		}		
 	}
 
 	return vertices;
@@ -450,8 +456,10 @@ vector<Vertex> App::loadObjFileModel(string filename) {
 			
 		// Temporary objects to read data into.
 		array<unsigned, 6>  f; // Face index array
+		array<unsigned, 6>  offset; // Face index array
 		Vec3f               v;
 		string              s;
+		offset.fill(6);
 
 		// Create a stream from the string to pick out one value at a time.
 		istringstream        iss(line);
@@ -464,10 +472,14 @@ vector<Vertex> App::loadObjFileModel(string filename) {
 			// YOUR CODE HERE (R4)
 			// Read the three vertex coordinates (x, y, z) into 'v'.
 			// Store a copy of 'v' in 'positions'.
+			iss >> v.x; iss >> v.y; iss >> v.z;
 			// See std::vector documentation for push_back.
+			positions.push_back(v);
 		} else if (s == "vn") { // normal
 			// YOUR CODE HERE (R4)
 			// Similar to above.
+			iss >> v.x; iss >> v.y; iss >> v.z;
+			normals.push_back(v);
 		} else if (s == "f") { // face
 			// YOUR CODE HERE (R4)
 			// Read the indices representing a face and store it in 'faces'.
@@ -484,14 +496,21 @@ vector<Vertex> App::loadObjFileModel(string filename) {
 
 			// Note that in C++ we index things starting from 0, but face indices in OBJ format start from 1.
 			// If you don't adjust for that, you'll index past the range of your vectors and get a crash.
-
+			for (int i = 0; i < 3; i++){
+				iss >> f[2 * i]; iss >> sink; iss >> f[2 * i + 1];
+			}
+			for (auto& fi : f)
+				fi = fi - 1;			
+			faces.push_back(f);
 			// It might be a good idea to print the indices to see that they were read correctly.
 			// cout << f[0] << " " << f[1] << " " << f[2] << " " << f[3] << " " << f[4] << " " << f[5] << endl;
+			// cin >> sink;
 		}
 	}
 	common_ctrl_.message(("Loaded mesh from " + filename).c_str());
 	return unpackIndexedData(positions, normals, faces);
 }
+
 
 void FW::init(void) {
 	new App;
