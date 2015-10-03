@@ -176,37 +176,57 @@ void MeshWithConnectivity::LoopSubdivision() {
 				col = colors[v0];
 				norm = normals[v0];
 				
-				int n = 0;
+				int n = 0, nb= 0, curr_dir = 2;
 				int curr_t = i, prev_t = i;
 				Vec3f new_mean_pos = Vec3f(0, 0, 0);
 				Vec3f new_mean_col = Vec3f(0, 0, 0);
 				Vec3f new_mean_norm = Vec3f(0, 0, 0);
-				int curr_edge = j;
-				int boundary = 0;
-				while (n == 0 || curr_t != i) {
-					new_mean_pos += positions[indices[curr_t][(curr_edge + 1) % 3]];
-					new_mean_col += colors[indices[curr_t][(curr_edge + 1) % 3]];
-					new_mean_norm += normals[indices[curr_t][(curr_edge + 1) % 3]];
-					n++;
-					prev_t = curr_t;
-					if (neighborTris[curr_t][(curr_edge + 2) % 3] != -1){
-						
+				int curr_edge = j;				
+				while (n == 0 || curr_t != i) {					
+					if (neighborTris[curr_t][(curr_edge + curr_dir) % 3] != -1 && nb == 0){
+						// Normal vertices are handlede here
+						new_mean_pos += positions[indices[curr_t][(curr_edge + 1) % 3]];
+						new_mean_col += colors[indices[curr_t][(curr_edge + 1) % 3]];
+						new_mean_norm += normals[indices[curr_t][(curr_edge + 1) % 3]];
+						prev_t = curr_t;
+						n++;
 						curr_t = neighborTris[curr_t][(curr_edge+2)%3];
 						curr_edge = neighborEdges[prev_t][(curr_edge + 2) % 3];
 						//FW::printf("No boundary on  %d, %d\n", curr_t, curr_edge);
 					}
 					else {
-						//FW::printf("Entering boundary on  %d, %d\n", i,j);
-						boundary = 1;
-						curr_t = i;
-						break;
+						FW::printf("boundary on  %d, %d, %f, %f, %f\n", curr_t, nb, positions[v0][0], positions[v0][1], positions[v0][2]);
+						// Boundary vertices are handled here
+						if (neighborTris[curr_t][(curr_edge + curr_dir) % 3] == -1){
+							n = 0;								
+							new_mean_pos = new_mean_pos * nb + positions[indices[curr_t][(curr_edge + curr_dir + nb) % 3]];
+							new_mean_col = new_mean_col * nb + colors[indices[curr_t][(curr_edge + curr_dir + nb) % 3]];
+							new_mean_norm = new_mean_norm * nb + normals[indices[curr_t][(curr_edge + curr_dir + nb) % 3]];
+							FW::printf("Mean pos on  on  %d, %d, %f, %f, %f\n", curr_t, curr_edge, new_mean_pos[0], new_mean_pos[1], new_mean_pos[2]);
+							curr_t = i;
+							curr_edge = j;
+							curr_dir = 0;
+							nb++;
+						} else{
+							// traverse in reverse direction from now
+							prev_t = curr_t;
+							curr_t = neighborTris[curr_t][(curr_edge + curr_dir) % 3];
+							curr_edge = (neighborEdges[prev_t][(curr_edge + curr_dir) % 3] + 1)%3;
+						}
+						if(nb >= 2)
+							break;
 					}
 				}
-				if (boundary == 0){
+				if (nb == 0){
 					float b = ((n>3) ? (3.0f / (8*n)) : (3.0f / 16));
 					pos = (1 - n*b) * positions[v0] + b * new_mean_pos;
 					col = (1 - n*b) * colors[v0] + b * new_mean_col;
 					norm = (1 - n*b) * normals[v0] + b * new_mean_norm;
+				}
+				else{
+					pos = 0.75f * positions[v0] + (1.0f / 8)* new_mean_pos;
+					col = 0.75f * colors[v0] + (1.0f / 8) * new_mean_col;
+					norm = 0.75f * normals[v0] + (1.0f / 8) * new_mean_norm;
 				}
 				
 
