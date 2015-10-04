@@ -37,10 +37,18 @@ Curve coreBezier(const Vec3f& p0,
 	// computing points on the spline
 
 	Mat4f B;
-	B.setCol(0, Vec4f(1.0, 0.0, 0, 0));
-	B.setCol(1, Vec4f(-3.0, 3.0, 0, 0));
-	B.setCol(2, Vec4f(3.0, -6.0, 3.0, 0));
-	B.setCol(3, Vec4f(-1.0, 3.0, -3.0, 1));	
+	Mat4f B_dash;
+	Vec3f prevBiN = Binit;
+	B.setRow(0, Vec4f(1.0,-3.0, 3.0,-1.0));
+	B.setRow(1, Vec4f(0.0, 3.0,-6.0, 3.0));
+	B.setRow(2, Vec4f(0.0, 0.0, 3.0,-3.0));
+	B.setRow(3, Vec4f(0.0, 0.0, 0.0, 1.0));
+
+	B_dash.setRow(0, Vec4f(-3.0,  6.0,-3.0, 0));
+	B_dash.setRow(1, Vec4f( 3.0,-12.0, 9.0, 0));
+	B_dash.setRow(2, Vec4f( 0.0,  6.0,-9.0, 0));
+	B_dash.setRow(3, Vec4f( 0.0,  0.0, 3.0, 0));
+
 	/*
 	cerr << "In core the rows of B are :" << endl;
 	printTranspose(B.getRow(0)); cerr << endl;
@@ -60,6 +68,7 @@ Curve coreBezier(const Vec3f& p0,
 	printTranspose(G.getRow(3)); cerr << endl;
 	*/
 	Mat4f GdotB = G * B;
+	Mat4f GdotB_dash = G * B_dash;
 	/*
 	cerr << "In core the rows of GdotB are :" << endl;
 	printTranspose(GdotB.getRow(0)); cerr << endl;
@@ -74,7 +83,11 @@ Curve coreBezier(const Vec3f& p0,
 		Vec4f powBasis(1.0, t, pow(t,2), pow(t,3));
 		Vec4f newP = GdotB * powBasis;
 		//cerr << "In core i = " << i << ",t = " << t << ", P = "; printTranspose(newP); cerr << endl;
-		R[i].V = newP.getXYZ();
+		R[i].V = newP.getXYZ();		
+		R[i].T = (GdotB_dash * powBasis).getXYZ().normalized();
+		R[i].N = prevBiN.cross(R[i].T).normalized();
+		R[i].B = R[i].T.cross(R[i].N).normalized();
+		prevBiN = R[i].B;
 	}
 
 	return R;
@@ -134,17 +147,18 @@ Curve evalBezier(const vector<Vec3f>& P, unsigned steps, bool adaptive, float er
     
 	Curve wholeCurve(n*steps + 1);
 	Curve R(steps + 1);
+	Vec3f Binit;// = (2.0f *P[0] - P[1]).normalized();
+	//Binit can't be parallel to tangenet so make perpendicular
+	Binit = Vec3f(0,0,1);
 	for (unsigned i = 0; i < n; i++) {
-		R = coreBezier(P[3*i], P[3*i+1], P[3*i+2], P[3*i+3],Vec3f(0,0,0),steps);
+		R = coreBezier(P[3 * i], P[3 * i + 1], P[3 * i + 2], P[3 * i + 3], Binit, steps);
 		//cerr << "Printing tesselated points for i = "<< i << endl;
+		Binit = R[steps -1].B;
 		for (unsigned s = 0; s < steps; s++) {
-			wholeCurve[i*steps + s] = R[s];
-			//cerr << "\t>>> s = " << s << ", "; printTranspose(R[s].V); cerr << endl;
+			wholeCurve[i*steps + s] = R[s];			
 		}
 	}
 	wholeCurve[n*steps] = R[steps];
-
-	//cerr << "\t>>> Returning empty curve." << endl;
 
     // Right now this will just return this empty curve.
 	return wholeCurve;
@@ -189,6 +203,7 @@ Curve evalBspline(const vector<Vec3f>& P, unsigned steps, bool adaptive, float e
 
 	Mat4f Bs2Bz = Bbs * Bbz.inverted();
 	Mat4f G;
+	Vec3f Binit;
 	
 	Curve wholeCurve(n*steps + 1);
 	Curve R(steps + 1);
@@ -199,11 +214,18 @@ Curve evalBspline(const vector<Vec3f>& P, unsigned steps, bool adaptive, float e
 		G.setCol(3, Vec4f(P[i+3], 0));
 		
 		Mat4f G1 = G * Bs2Bz;
+		if (i == 0){
+			Binit = //((Vec4f(2.0f *G1.getCol(0)).getXYZ()) - Vec4f(G1.getCol(1)).getXYZ()).normalized();
+			//Binit can't be parallel to tangenet so make it perpendicular
+			//Binit = Vec3f(0* Binit[1] - Binit[2], 0 * (Binit[2] - Binit[0]), (Binit[0] - Binit[1])).normalized();
+			Binit = Vec3f(0, 0, 1);
+			cout << "Printing Binit now: ";
+			printTranspose(Binit); printTranspose(2.0f *G1.getCol(0)); printTranspose(G1.getCol(1)); cerr << endl;
+		}
 		R = coreBezier(Vec4f(G1.getCol(0)).getXYZ(), Vec4f(G1.getCol(1)).getXYZ(),
-			Vec4f(G1.getCol(2)).getXYZ(), Vec4f(G1.getCol(3)).getXYZ(), Vec3f(0, 0, 0), steps);
-		//cerr << "Printing control  points for i = " << i << endl;
-		//printTranspose(p0); printTranspose(p1); printTranspose(p2); printTranspose(p3); cerr << endl;
-
+			Vec4f(G1.getCol(2)).getXYZ(), Vec4f(G1.getCol(3)).getXYZ(), Binit, steps);
+		
+		Binit = R[steps - 1].B;
 
 		cerr << "Printing tesselated points for i = "<< i << endl;
 		for (unsigned s = 0; s < steps; s++) {

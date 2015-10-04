@@ -30,7 +30,10 @@ Hours spent on extra credit (approx.):
 R5 Smoothing the mesh by repositioning old vertices (2p): done
 
 # Did you do any extra credit work?
-Correct handling of the boundary vertices in sub-division.
+- Correct handling of the boundary vertices in sub-division.
+- Compute local co-ordinate frames in bezier and b-spline curves.
+- Implemeted Surfaces of Revolution.
+- Implemeted Generalized Cylinders.
 (Describe what you did and, if there was a substantial amount of work involved, how you did it. Also describe how to use/activate your extra features, if they are interactive.)
 
 # Are there any known problems/bugs remaining in your code?

@@ -30,7 +30,25 @@ namespace
         vector< FW::Vec3i > ret;
 
 		// YOUR CODE HERE: generate zigzagging triangle indices and push them to ret.
-
+		for (int i = 0; i < (len - 1); i++){
+			for (int j = 0; j < dia - 1; j++){
+				// Each step we handle one quadrilateral and break it into 2 triangles
+				// Hence 2*dia vertices make dia - 1 quads and 2(dia -1) triangles
+				// Triangle 1
+				ret.push_back(Vec3i(i*dia + j, (i + 1)*dia + j, i*dia + j + 1));				
+				// Triangle 2
+				ret.push_back(Vec3i(i*dia + j + 1, (i + 1)*dia + j, (i+1)*dia + j + 1));
+			}
+		}
+		if (closed){
+			int i = len - 1;
+			for (int j = 0; j < dia - 1; j++){
+				// Triangle 1
+				ret.push_back(Vec3i(i*dia + j, j, i*dia + j + 1));
+				// Triangle 2
+				ret.push_back(Vec3i(i*dia + j + 1, j, j + 1));
+			}
+		}
         return ret;
     }
     
@@ -63,8 +81,24 @@ Surface makeSurfRev(const Curve &profile, unsigned steps)
 	// point in the profile (that's two cascaded loops), and finally get the faces with triSweep.
 	// You'll need to rotate the curve at each step, similar to the cone in assignment 0 but
 	// now you should be using a real rotation matrix.
+	float step_angle = 2 * FW_PI /steps;
 
-    cerr << "\t>>> makeSurfRev called (but not implemented).\n\t>>> Returning empty surface." << endl;
+    //cerr << "\t>>> makeSurfRev called (but not implemented).\n\t>>> Returning empty surface." << endl;
+	Mat4f Rot = rotation4f(Vec3f(0, 1, 0), -step_angle);
+	
+	for (int i = 0; i < steps; i++) {
+		for (int j = 0; j < profile.size(); j++){
+			if (i == 0){
+				surface.VV.push_back(profile[j].V);
+				surface.VN.push_back(-profile[j].N);
+			}
+			else{
+				surface.VV.push_back(Rot * surface.VV[(i - 1)*profile.size() + j]);
+				surface.VN.push_back(Rot * surface.VN[(i - 1)*profile.size() + j]);
+			}
+		}
+	}
+	surface.VF = triSweep(profile.size(), steps, TRUE);
  
     return surface;
 }
@@ -83,8 +117,32 @@ Surface makeGenCyl(const Curve &profile, const Curve &sweep )
 	// This is again two cascaded loops. Build the local coordinate systems and transform
 	// the points in a very similar way to the one with makeSurfRev.
 
-    cerr << "\t>>> makeGenCyl called (but not implemented).\n\t>>> Returning empty surface." <<endl;
-
+    //cerr << "\t>>> makeGenCyl called (but not implemented).\n\t>>> Returning empty surface." <<endl;
+	Mat4f trans;
+	Mat3f Rot;
+	cout << "Total sizes are " << sweep.size() <<" and " <<profile.size();
+	for (int i = sweep.size()-1; i >= 0; i--) {
+		trans.setCol(0, Vec4f(sweep[i].N, 0));
+		trans.setCol(1, Vec4f(sweep[i].B, 0));
+		trans.setCol(2, Vec4f(sweep[i].T, 0));
+		trans.setCol(3, Vec4f(sweep[i].V, 1));
+		
+		Rot.setCol(0,sweep[i].N);
+		Rot.setCol(1, sweep[i].B);
+		Rot.setCol(2, sweep[i].T);
+		
+		/*cout << "Now in point: " << i << endl;
+		printTranspose(trans.getRow(0)); cout << endl;
+		printTranspose(trans.getRow(1)); cout << endl;
+		printTranspose(trans.getRow(2)); cout << endl;
+		printTranspose(trans.getRow(3)); cout << endl;*/
+		for (int j = 0; j < profile.size(); j++) {
+			surface.VV.push_back(trans * profile[j].V);
+			surface.VN.push_back(Rot * -profile[j].N);
+		}
+	}
+	surface.VF = triSweep(profile.size(), sweep.size() - 1, TRUE);
+	cout << "We are done here!!: " << surface.VF.size() << endl;
     return surface;
 }
 
