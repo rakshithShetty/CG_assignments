@@ -19,13 +19,14 @@ Did you work on the assignment using Aalto computers, your own computers, or bot
 # effort on them. If you do, explain the work you did in the problems/bugs section
 # and leave your 'attempt' code in place (commented out if necessary) so we can see it.
 
-           R1 Calculating joint positions (1 p): not done
-                   R2 Rotating the joints (2 p): not done
-  R3 Visualizing joint coordinate systems (2 p): not done
-       R4 Skeletal subspace deformation (4 pts): not done
-                R5 Skinning for normals (1 pts): not done
+           R1 Calculating joint positions (1 p): done
+                   R2 Rotating the joints (2 p): done
+  R3 Visualizing joint coordinate systems (2 p): done
+       R4 Skeletal subspace deformation (4 pts): done
+                R5 Skinning for normals (1 pts): done
 
 # Did you do any extra credit work?
+ - gpu ssd computation
 
 (Describe what you did and, if there was a substantial amount of work involved, how you did it. Also describe how to use/activate your extra features, if they are interactive.)
 

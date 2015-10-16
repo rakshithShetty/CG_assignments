@@ -233,10 +233,14 @@ void App::initRendering()
 	
 		void main()
 		{
-			float clampedCosine = clamp(dot(aNormal, directionToLight), 0.0, 1.0);
+			mat4 compositeTrans = aWeights1[0] * uJoints[aJoints1[0]] + aWeights1[1] * uJoints[aJoints1[1]] + aWeights1[2] * uJoints[aJoints1[2]]
+							    + aWeights2[0] * uJoints[aJoints2[0]] + aWeights2[1] * uJoints[aJoints2[1]] + aWeights2[2] * uJoints[aJoints2[2]];
+			
+			vec3 newNormal = (compositeTrans * vec4(aNormal, 0)).xyz;
+			float clampedCosine = clamp(dot(newNormal, directionToLight), 0.0, 1.0);
 			vec3 litColor = vec3(clampedCosine);
 			vColor = vec4(mix(aColor.xyz, litColor, uShadingMix), 1);
-			gl_Position = uWorldToClip * aPosition;
+			gl_Position = uWorldToClip * compositeTrans *  aPosition;
 		}
 		),
 		"#version 330\n"
@@ -362,7 +366,7 @@ void App::renderSkeleton() {
 		// YOUR CODE HERE (R1)
 		// Use the transforms to obtain the position of the joint in world space.
 		// This is very simple...
-		Vec3f joint_world_pos;
+		Vec3f joint_world_pos = Vec4f(transforms[i].getCol(3)).getXYZ();
 
 		// glBegin()-glEnd() with glVertex() commands in between is how draw calls
 		// are done in immediate mode OpenGL.
@@ -381,29 +385,45 @@ void App::renderSkeleton() {
 		// (If you understand transformation matrices correctly, you can directly
 		// read the these vectors off of the matrices.)
 		Vec3f right, up, ahead;
-
+		
 		// Then let's draw some lines to show the joint coordinate system.
 		// Draw a small coloured line segment from the joint's world position towards
 		// each of its local coordinate axes (the line length should be determined by "scale").
 		// The colors for each axis are already set for you below.
 		const float scale = 0.05;	// length for the coordinate system axes.
+		right = joint_world_pos + scale * Vec4f(transforms[i].getCol(0)).getXYZ();
+		up = joint_world_pos + scale * Vec4f(transforms[i].getCol(1)).getXYZ();
+		ahead = joint_world_pos + scale * Vec4f(transforms[i].getCol(2)).getXYZ();
+
 		glBegin(GL_LINES);
+
 
 		// draw the x axis... ("right")
 		glColor3f(1, 0, 0); // red
-		// glVertex3f(...); glVertex3f(...);
+		glVertex3f(joint_world_pos.x, joint_world_pos.y, joint_world_pos.z); 
+		glVertex3f(right.x, right.y, right.z);
 
 		// ..and the y axis.. ("up")
 		glColor3f(0, 1, 0); // green
 		// glVertex3f(...); glVertex3f(...);
+		glVertex3f(joint_world_pos.x, joint_world_pos.y, joint_world_pos.z);
+		glVertex3f(up.x, up.y, up.z);
 
 		// ..and the z axis ("ahead").
 		glColor3f(0, 0, 1); // blue
 		// glVertex3f(...); glVertex3f(...);
+		glVertex3f(joint_world_pos.x, joint_world_pos.y, joint_world_pos.z);
+		glVertex3f(ahead.x, ahead.y, ahead.z);
 
 		// Finally, draw a line segment from the world position of this joint to the world
 		// position of the parent joint. You should first check if the parent exists
 		// using skel_.getJointParent(i) - it returns -1 for the root, which has no parent.
+		if (skel_.getJointParent(i) != -1){
+			glColor3f(1, 1, 1);
+			Vec3f parent_world_pos = Vec4f(transforms[skel_.getJointParent(i)].getCol(3)).getXYZ();
+			glVertex3f(joint_world_pos.x, joint_world_pos.y, joint_world_pos.z);
+			glVertex3f(parent_world_pos.x, parent_world_pos.y, parent_world_pos.z);
+		}		
 			
 		// ...
 
@@ -422,8 +442,12 @@ vector<Vertex> App::computeSSD(const vector<WeightedVertex>& source_vertices) {
 		// This starter code just copies the source vertex untouched, so the result is not animated.
 		// Replace these lines with the loop that applies the bone transforms and weights.
 		// For R5, transform the normals as well.
-		v.position = sv.position;	
-		v.normal = sv.normal;		
+		Mat4f composite_transform = Mat4f(0);
+			
+		for (int i = 0; i < WEIGHTS_PER_VERTEX; i++)
+			composite_transform += sv.weights[i] * ssd_transforms[sv.joints[i]];
+		v.position = composite_transform * sv.position;
+		v.normal = (composite_transform * Vec4f(sv.normal,0)).getXYZ();
 		v.color = sv.color;
 		skinned_vertices.push_back(v);
 	}
