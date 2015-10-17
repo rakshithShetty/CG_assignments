@@ -228,7 +228,7 @@ void App::initRendering()
 
 		out vec4 vColor;		
 
-		const int numJoints = 18;
+		const int numJoints = 20;
 		uniform mat4 uJoints[numJoints];
 	
 		void main()

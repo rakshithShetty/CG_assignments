@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-static const unsigned JOINTS = 18u;
+static const unsigned JOINTS = 20u;
 static const unsigned WEIGHTS_PER_VERTEX = 6u;
 
 struct Joint

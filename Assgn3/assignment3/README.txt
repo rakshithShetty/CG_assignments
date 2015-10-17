@@ -27,6 +27,11 @@ Did you work on the assignment using Aalto computers, your own computers, or bot
 
 # Did you do any extra credit work?
  - gpu ssd computation
+ - Added wrist joints and changed ssd weights for appropriate vertices to attach to the wrist joint. First, I wrote a python script (saved in assets/script.py) to parse the vertices and weights
+ files inorder to visualize the relavant vertices only. Then using this visulization, I could easily pick the correct co-ordinates for the wrist joints. Then I assigned all the vertices within the hand
+ and sufficiently far from the joint to have weight 1 for the wrist joint. Found this by computing projection of vertices onto line joining elbow and wrist joints, again in the script. Finally,
+ for vertices close to the wrist joint I assigned weights using sigmoid function to interpolate b/w wrist and elbow joint.
+ The model files containing wrist joints are called 'ModelWrst*'
 
 (Describe what you did and, if there was a substantial amount of work involved, how you did it. Also describe how to use/activate your extra features, if they are interactive.)
 
