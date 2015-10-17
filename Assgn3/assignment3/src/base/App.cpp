@@ -106,7 +106,7 @@ bool App::handleEvent(const Window::Event& ev) {
 		else if (ev.key == FW_KEY_Q)
 			selected_joint_ = selected_joint_ == 0 ? 0 : selected_joint_-1;
 		else if (ev.key == FW_KEY_W)
-			selected_joint_ = clamp(selected_joint_+1, 0u, JOINTS-1);
+			selected_joint_ = clamp(selected_joint_+1, 0u, skel_.njoints_-1);
 	}
 
 	if (ev.type == Window::EventType_Close)	{
@@ -362,7 +362,7 @@ void App::renderSkeleton() {
 	vector<Mat4f> transforms = skel_.getToWorldTransforms();
 
 	// And loop through all the joints.
-	for (auto i = 0u; i < JOINTS; ++i) {
+	for (auto i = 0u; i < skel_.njoints_; ++i) {
 		// YOUR CODE HERE (R1)
 		// Use the transforms to obtain the position of the joint in world space.
 		// This is very simple...
@@ -466,7 +466,7 @@ vector<WeightedVertex> App::loadWeightedMesh(string mesh_file, string attachment
 		auto temp_w = array<float, WEIGHTS_PER_VERTEX>();
 		stringstream ss(line);
 		auto n_weights = 0u;
-		for (auto i = 0u; i < JOINTS-1; ++i) {
+		for (auto i = 0u; i < skel_.njoints_- 1; ++i) {
 			float weight;
 			ss >> weight;
 			if (weight != 0) {
@@ -515,7 +515,7 @@ vector<WeightedVertex> App::loadWeightedMesh(string mesh_file, string attachment
 		(void)sum_weights; // silence warning on release build
 		assert(0.99 < sum_weights && sum_weights < 1.01 && "weights do not sum up to 1");
 		for (auto i = 0u; i < WEIGHTS_PER_VERTEX; ++i) {
-			assert(0 <= v.joints[i] && v.joints[i] < JOINTS && "invalid index");
+			assert(0 <= v.joints[i] && v.joints[i] < skel_.njoints_ && "invalid index");
 		}
 	}
 	return vertices;

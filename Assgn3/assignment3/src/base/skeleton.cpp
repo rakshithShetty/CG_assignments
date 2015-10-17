@@ -31,7 +31,7 @@ void Skeleton::load(string skeleton_file) {
 			++current_joint;
 		}
 	}
-
+	njoints_ = current_joint;
 	// initially set to_parent matrices to identity
 	for (auto j = 0u; j < joints_.size(); ++j)
 		setJointRotation(j, Vec3f(0, 0, 0));

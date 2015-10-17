@@ -56,6 +56,7 @@ public:
 
 	std::vector<FW::Mat4f>	getToWorldTransforms();
 	std::vector<FW::Mat4f>	getSSDTransforms();
+	unsigned				njoints_;
 
 private:
 	void					updateToWorldTransforms(unsigned joint_index, const FW::Mat4f& parent_to_world);
